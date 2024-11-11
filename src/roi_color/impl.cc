@@ -30,6 +30,48 @@ std::unordered_map<int, cv::Rect> roi_color(const cv::Mat& input) {
      */
     std::unordered_map<int, cv::Rect> res;
     // IMPLEMENT YOUR CODE HERE
+    cv::Mat gray, binary;
 
+    // 1. 将彩色图片转换为灰度图像
+    cv::cvtColor(input, gray, cv::COLOR_BGR2GRAY);
+
+    // 2. 对灰度图像进行二值化
+    cv::threshold(gray, binary, 0, 255, cv::THRESH_BINARY_INV + cv::THRESH_OTSU);
+
+    // 3. 使用cv::findContours函数查找二值化图像中的轮廓
+    std::vector<std::vector<cv::Point>> contours;
+    cv::findContours(binary, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+
+    // 遍历找到的轮廓
+    for (const auto& contour : contours) {
+        // 4. 使用cv::boundingRect计算出轮廓的最小外接矩形
+        cv::Rect rect = cv::boundingRect(contour);
+
+        // 5. 根据最小外接矩形从原始图像中提取ROI区域
+        cv::Mat roi = input(rect);
+
+        // 6. 统计每个ROI区域的颜色
+        int blue = 0, green = 0, red = 0;
+        for (int y = 0; y < roi.rows; ++y) {
+            for (int x = 0; x < roi.cols; ++x) {
+                cv::Vec3b color = roi.at<cv::Vec3b>(y, x);
+                blue += color[0];
+                green += color[1];
+                red += color[2];
+            }
+        }
+
+        // 确定主要颜色
+        int dominantColor = std::max({blue, green, red});
+
+        // 7. 将颜色和对应的矩形位置存入map中
+        if (dominantColor == red) {
+            res[2] = rect; // Red
+        } else if (dominantColor == green) {
+            res[1] = rect; // Green
+        } else if (dominantColor == blue) {
+            res[0] = rect; // Blue
+        }
+    }
     return res;
 }

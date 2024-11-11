@@ -1,6 +1,6 @@
 #include "impls.h"
 #include <algorithm>
-
+using namespace std;
 float compute_iou(const cv::Rect& a, const cv::Rect& b) {
     /**
      * 要求：
@@ -17,5 +17,16 @@ float compute_iou(const cv::Rect& a, const cv::Rect& b) {
      * 运行测试点，显示通过就行，不通过会告诉你哪一组矩形错了。
     */
     // IMPLEMENT YOUR CODE HERE
-    return 0.f;
+    float x1=(a.x > b.x) ? a.x : b.x;
+    float y1=(a.y > b.y) ? a.y : b.y;
+    float x2=min(a.x+a.width,b.x+b.width);
+    float y2=min(a.y+a.height,b.y+b.height);
+    float w=(x2 - x1) > 0 ? (x2 - x1) : 0;
+    float h=(y2 - y1) > 0 ? (y2 - y1) : 0;
+    float area1=w*h;
+    float areaa=a.width * a.height;
+    float areab=b.width * b.height;
+    float area2=areaa+areab-area1;
+    float iou=area1/area2;
+    return iou;
 }
